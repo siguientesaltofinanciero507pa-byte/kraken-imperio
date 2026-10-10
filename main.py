@@ -335,7 +335,7 @@ async def show_about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         "🚗 Delivery express (Panamá → LatAm → Mundo)\n\n"
         "💡 Fundado por Felipe Batista\n"
         "🌐 Powered by KRAKEN-SAPIENS AI\n\n"
-        "_"El que no arriesga, no gana."_ 🐙"
+        '_"El que no arriesga, no gana."_ 🐙'
     )
     keyboard = [[InlineKeyboardButton("🔙 Volver", callback_data="start_back")]]
     await query.edit_message_text(
