@@ -327,7 +327,7 @@ async def show_about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     """Info sobre KRAKEN."""
     query = update.callback_query
     text = (
-        "🐙 *KRAKEN IMPERIO*\n\n"
+        "🐙 *KRAKEN IMPERIO*\n\n",
         "Somos un ecosistema crypto con:\n\n"
         "🪙 Creación de tokens profesionales\n"
         "📈 Señales y trading automatizado\n"
