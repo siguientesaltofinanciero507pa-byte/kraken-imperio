@@ -53,7 +53,7 @@ DELIVERY_LINKS = {
 # CATÁLOGO DE PRODUCTOS / SERVICIOS
 PRODUCTS = {
     "asesoria": {
-        "name": "🧠 Asesoría Crypto 1-a-1",
+        "name": "🧠 Asesoria Crypto 1-a-1",
         "desc": "Sesión
 
 #!/usr/bin/env python3
@@ -110,8 +110,8 @@ DELIVERY_LINKS = {
 # CATÁLOGO DE PRODUCTOS / SERVICIOS
 PRODUCTS = {
     "asesoria": {
-        "name": "🧠 Asesoría Crypto 1-a-1",
-        "desc": "Sesión privada 1 hora. Estrategia personalizada de trading, DeFi y tokens.",
+        "name": "🧠 Asesoria Crypto 1-a-1",
+        "desc": "Sesion privada 1 hora. Estrategia personalizada de trading, DeFi y tokens.",
         "price": "$50 USDT",
         "image": "🧠",
     },
@@ -141,7 +141,7 @@ PRODUCTS = {
     },
     "pack_kraken": {
         "name": "🐙 PACK KRAKEN TOTAL",
-        "desc": "Asesoría + Señales + Token + Bot personalizado. El paquete definitivo.",
+        "desc": "Asesoria + Señales + Token + Bot personalizado. El paquete definitivo.",
         "price": "$800 USDT (antes $950)",
         "image": "🐙",
     },
@@ -603,7 +603,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         elif product_key == "pack_kraken":
             delivery_msg += (
                 f"🐙 *PACK IMPERIO — TODO INCLUIDO:*\n\n"
-                f"📅 Asesoría: {DELIVERY_LINKS['asesoria']}\n"
+                f"📅 Asesoria: {DELIVERY_LINKS['asesoria']}\n"
                 f"📈 Señales: {DELIVERY_LINKS['signals']}\n"
                 f"🪙 Token: Felipe contactará\n"
                 f"🤖 Bot: Felipe contactará\n\n"
