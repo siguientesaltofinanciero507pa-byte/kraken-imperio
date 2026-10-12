@@ -1,6 +1,7 @@
+
 #!/usr/bin/env python3
 """
-KRAKEN-SAPIENS V10.1 — Bot de Telegram Vendedor 24/7
+KRAKEN-SAPIENS V10.3 — Bot de Telegram CON CEREBRO IA
 Felipe Batista | KRAKEN IMPERIO
 Deploy: GitHub push → Railway auto-deploy
 """
@@ -17,12 +18,19 @@ from telegram.ext import (
     filters,
 )
 
+# 🧠 IMPORTAR EL CEREBRO IA
+from brain import think
+
 # ══════════════════════════════════════════════════
 # CONFIGURACIÓN
 # ══════════════════════════════════════════════════
 TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 PORT = int(os.getenv("PORT", "8080"))
+MASTER_KEY = os.getenv("MASTER_KEY", "7790hijomio")
+
+# 🔵 USUARIOS CON ACCESO HIERRO (se llena en runtime)
+hierro_users: set = set()
 
 # WALLETs DE FELIPE
 WALLETS = {
@@ -30,6 +38,73 @@ WALLETS = {
     "BNB_BEP20": "0xA36A3493cB08faDeBEF40ab68Fd8A71EcB6A4416",
     "POLYGON": "0xA36A3493cB08faDeBEF40ab68Fd8A71EcB6A4416",
     "TRON_TRC20": "TYXe6hXkkeevLsQsrCbTWgwfBq2RL1KNjh",
+}
+
+# 🔗 LINKS DE ENTREGA AUTOMÁTICA (configurar en Railway)
+DELIVERY_LINKS = {
+    "asesoria": os.getenv("ZOOM_ASESORIA_LINK", "https://zoom.us/j/TU_LINK_AQUI"),
+    "signals": os.getenv("GRUPO_SENALES_LINK", "https://t.me/TU_GRUPO_AQUI"),
+    "tokens": os.getenv("TOKEN_CONTRACT", "Contrato pendiente - Felipe te contactará"),
+    "bot_custom": os.getenv("BOT_DEPLOY_URL", "Deploy pendiente - Felipe te contactará"),
+    "delivery": "https://t.me/KRAKEN_DELIVERY_BOT",
+    "pack_kraken": os.getenv("PACK_DOWNLOAD_LINK", "Pack pendiente - Felipe te contactará"),
+}
+
+# CATÁLOGO DE PRODUCTOS / SERVICIOS
+PRODUCTS = {
+    "asesoria": {
+        "name": "🧠 Asesoría Crypto 1-a-1",
+        "desc": "Sesión
+
+#!/usr/bin/env python3
+"""
+KRAKEN-SAPIENS V10.3 — Bot de Telegram CON CEREBRO IA
+Felipe Batista | KRAKEN IMPERIO
+Deploy: GitHub push → Railway auto-deploy
+"""
+
+import os
+import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackQueryHandler,
+    MessageHandler,
+    ContextTypes,
+    filters,
+)
+
+# 🧠 IMPORTAR EL CEREBRO IA
+from brain import think
+
+# ══════════════════════════════════════════════════
+# CONFIGURACIÓN
+# ══════════════════════════════════════════════════
+TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+PORT = int(os.getenv("PORT", "8080"))
+MASTER_KEY = os.getenv("MASTER_KEY", "7790hijomio")
+
+# 🔵 USUARIOS CON ACCESO HIERRO (se llena en runtime)
+hierro_users: set = set()
+
+# WALLETs DE FELIPE
+WALLETS = {
+    "BTC": "bc1qwpktag36yacv6z7eqy6exz4j0vstwa7shzam29",
+    "BNB_BEP20": "0xA36A3493cB08faDeBEF40ab68Fd8A71EcB6A4416",
+    "POLYGON": "0xA36A3493cB08faDeBEF40ab68Fd8A71EcB6A4416",
+    "TRON_TRC20": "TYXe6hXkkeevLsQsrCbTWgwfBq2RL1KNjh",
+}
+
+# 🔗 LINKS DE ENTREGA AUTOMÁTICA (configurar en Railway)
+DELIVERY_LINKS = {
+    "asesoria": os.getenv("ZOOM_ASESORIA_LINK", "https://zoom.us/j/TU_LINK_AQUI"),
+    "signals": os.getenv("GRUPO_SENALES_LINK", "https://t.me/TU_GRUPO_AQUI"),
+    "tokens": os.getenv("TOKEN_CONTRACT", "Contrato pendiente - Felipe te contactará"),
+    "bot_custom": os.getenv("BOT_DEPLOY_URL", "Deploy pendiente - Felipe te contactará"),
+    "delivery": "https://t.me/KRAKEN_DELIVERY_BOT",
+    "pack_kraken": os.getenv("PACK_DOWNLOAD_LINK", "Pack pendiente - Felipe te contactará"),
 }
 
 # CATÁLOGO DE PRODUCTOS / SERVICIOS
@@ -83,6 +158,27 @@ logger = logging.getLogger(__name__)
 
 
 # ══════════════════════════════════════════════════
+# 🧠 SISTEMA DE ACCESO (DIOS / HIERRO / CLIENTE)
+# ══════════════════════════════════════════════════
+
+def get_access_level(user_id: int) -> str:
+    """Devuelve el nivel de acceso del usuario."""
+    if user_id == ADMIN_ID:
+        return "DIOS"
+    elif user_id in hierro_users:
+        return "HIERRO"
+    else:
+        return "CLIENTE"
+
+
+def get_user_display(user) -> str:
+    """Devuelve el nombre visible del usuario (arregla bug @None)."""
+    if user.username:
+        return f"@{user.username}"
+    return f"{user.first_name} (ID: {user.id})"
+
+
+# ══════════════════════════════════════════════════
 # COMANDOS PRINCIPALES
 # ══════════════════════════════════════════════════
 
@@ -113,6 +209,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def catalog(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Muestra el catálogo completo."""
+    query = update.callback_query
     keyboard = []
     for key, prod in PRODUCTS.items():
         keyboard.append(
@@ -123,7 +220,7 @@ async def catalog(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
     keyboard.append([InlineKeyboardButton("🔙 Volver", callback_data="start_back")])
 
-    await update.callback_query.edit_message_text(
+    await query.edit_message_text(
         "🛒 *CATÁLOGO KRAKEN*\n\nSelecciona un servicio 👇",
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="Markdown",
@@ -205,7 +302,7 @@ async def paid_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     user_orders[user.id] = {
         "product": product_key,
         "status": "payment_sent",
-        "username": user.username or user.first_name,
+        "username": get_user_display(user),
     }
 
     await query.edit_message_text(
@@ -223,7 +320,7 @@ async def paid_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 chat_id=ADMIN_ID,
                 text=(
                     f"🚨 *NUEVA VENTA PENDIENTE*\n\n"
-                    f"👤 Usuario: @{user.username} (ID: {user.id})\n"
+                    f"👤 Usuario: {get_user_display(user)}\n"
                     f"🛒 Producto: {product['name'] if product else product_key}\n"
                     f"💰 Precio: {product['price'] if product else 'N/A'}\n\n"
                     f"_Esperando comprobante de pago..._"
@@ -235,7 +332,7 @@ async def paid_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 async def handle_payment_proof(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Recibe comprobante de pago (foto o texto)."""
+    """Recibe comprobante de pago (foto o documento)."""
     user = update.effective_user
     order = user_orders.get(user.id)
 
@@ -247,7 +344,7 @@ async def handle_payment_proof(update: Update, context: ContextTypes.DEFAULT_TYP
         try:
             caption = (
                 f"🧾 *COMPROBANTE DE PAGO*\n\n"
-                f"👤 @{user.username} (ID: {user.id})\n"
+                f"👤 {get_user_display(user)}\n"
                 f"🛒 Producto: {order['product']}"
             )
 
@@ -265,12 +362,6 @@ async def handle_payment_proof(update: Update, context: ContextTypes.DEFAULT_TYP
                     caption=caption,
                     parse_mode="Markdown",
                 )
-            else:
-                await context.bot.send_message(
-                    chat_id=ADMIN_ID,
-                    text=f"{caption}\n\n📝 Texto: {update.message.text}",
-                    parse_mode="Markdown",
-                )
 
             order["status"] = "proof_sent"
         except Exception as e:
@@ -283,6 +374,90 @@ async def handle_payment_proof(update: Update, context: ContextTypes.DEFAULT_TYP
         "🐙 Gracias por confiar en KRAKEN IMPERIO.",
         parse_mode="Markdown",
     )
+
+
+# ══════════════════════════════════════════════════
+# 🧠 MENSAJES DE TEXTO → PASAN POR EL CEREBRO IA
+# ══════════════════════════════════════════════════
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Maneja TODOS los mensajes de texto a través del cerebro IA."""
+    user = update.effective_user
+    user_id = user.id
+    text = update.message.text
+
+    # ── DETECTAR CLAVE HIERRO ──
+    if text.strip() == MASTER_KEY and user_id != ADMIN_ID:
+        hierro_users.add(user_id)
+        logger.info(f"🔵 MODO HIERRO activado para {get_user_display(user)}")
+        await update.message.reply_text(
+            "🔑 *Acceso concedido.*\n\n"
+            "Bienvenido al nivel superior, mi rey. 🐙\n"
+            "Ya tienes acceso completo. ¿En qué te ayudo?",
+            parse_mode="Markdown",
+        )
+        return
+
+    # ── SI TIENE ORDEN PENDIENTE → TRATARLO COMO COMPROBANTE DE TEXTO ──
+    order = user_orders.get(user_id)
+    if order and order.get("status") == "payment_sent":
+        # Reenviar texto como comprobante al admin
+        if ADMIN_ID:
+            try:
+                await context.bot.send_message(
+                    chat_id=ADMIN_ID,
+                    text=(
+                        f"🧾 *COMPROBANTE DE PAGO (texto)*\n\n"
+                        f"👤 {get_user_display(user)}\n"
+                        f"🛒 Producto: {order['product']}\n\n"
+                        f"📝 Texto: {text}"
+                    ),
+                    parse_mode="Markdown",
+                )
+                order["status"] = "proof_sent"
+            except Exception as e:
+                logger.error(f"Error reenviando comprobante: {e}")
+
+        await update.message.reply_text(
+            "✅ *¡Comprobante recibido!*\n\n"
+            "⏳ Un operador lo verificará pronto.\n"
+            "🐙 Gracias por confiar en KRAKEN IMPERIO.",
+            parse_mode="Markdown",
+        )
+        return
+
+    # ── DETERMINAR NIVEL DE ACCESO ──
+    access = get_access_level(user_id)
+
+    # ── CONSTRUIR CONTEXTO PARA EL CEREBRO ──
+    user_context = f"[Usuario: {get_user_display(user)} | Nivel: {access}]"
+
+    # ── ENVIAR AL CEREBRO IA ──
+    try:
+        # Indicar que está escribiendo
+        await update.message.chat.send_action("typing")
+
+        # Llamar al cerebro
+        response = think(
+            user_message=f"{user_context} {text}",
+            access_level=access,
+        )
+
+        # Enviar respuesta (dividir si es muy larga para Telegram max 4096 chars)
+        if len(response) > 4096:
+            for i in range(0, len(response), 4096):
+                await update.message.reply_text(response[i:i+4096])
+        else:
+            await update.message.reply_text(response)
+
+    except Exception as e:
+        logger.error(f"Error en cerebro IA: {e}")
+        await update.message.reply_text(
+            "🐙 *KRAKEN-SAPIENS*\n\n"
+            "⚠️ El cerebro está recalibrando...\n"
+            "Intenta de nuevo en unos segundos.",
+            parse_mode="Markdown",
+        )
 
 
 # ══════════════════════════════════════════════════
@@ -327,7 +502,7 @@ async def show_about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     """Info sobre KRAKEN."""
     query = update.callback_query
     text = (
-        "🐙 *KRAKEN IMPERIO*\n\n",
+        "🐙 *KRAKEN IMPERIO*\n\n"
         "Somos un ecosistema crypto con:\n\n"
         "🪙 Creación de tokens profesionales\n"
         "📈 Señales y trading automatizado\n"
@@ -360,7 +535,7 @@ async def start_back(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
 
 # ══════════════════════════════════════════════════
-# ADMIN: APROBAR / RECHAZAR PAGOS
+# ADMIN: APROBAR PAGOS + ENTREGA AUTOMÁTICA
 # ══════════════════════════════════════════════════
 
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -377,19 +552,87 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     if order:
         order["status"] = "approved"
-        product = PRODUCTS.get(order["product"], {})
+        product_key = order["product"]
+        product = PRODUCTS.get(product_key, {})
+        delivery_link = DELIVERY_LINKS.get(product_key, "")
+
+        # ── NOTIFICAR AL CLIENTE CON LINK DE ENTREGA ──
+        delivery_msg = (
+            "✅ *¡PAGO CONFIRMADO!*\n\n"
+            f"🛒 *{product.get('name', product_key)}*\n"
+            f"💰 *{product.get('price', 'N/A')}*\n\n"
+            "═══════════════════════\n"
+            "🐙 *TU SERVICIO ESTÁ LISTO:*\n\n"
+        )
+
+        # Mensaje específico según producto
+        if product_key == "asesoria":
+            delivery_msg += (
+                f"📅 *Agenda tu sesión aquí:*\n"
+                f"👉 {delivery_link}\n\n"
+                f"⏰ Duración: 1 hora\n"
+                f"📞 Prepárate con tus preguntas"
+            )
+        elif product_key == "signals":
+            delivery_msg += (
+                f"📈 *Únete al grupo privado:*\n"
+                f"👉 {delivery_link}\n\n"
+                f"🔔 Recibirás señales en tiempo real\n"
+                f"📊 Entry / Stop Loss / Targets"
+            )
+        elif product_key == "tokens":
+            delivery_msg += (
+                f"🪙 *Token en proceso:*\n"
+                f"👉 {delivery_link}\n\n"
+                f"Felipe te contactará para los detalles.\n"
+                f"Redes disponibles: BSC, Polygon, Tron"
+            )
+        elif product_key == "bot_custom":
+            delivery_msg += (
+                f"🤖 *Bot en desarrollo:*\n"
+                f"👉 {delivery_link}\n\n"
+                f"Felipe te contactará para los requerimientos.\n"
+                f"Deploy incluido en Railway 24/7"
+            )
+        elif product_key == "delivery":
+            delivery_msg += (
+                f"🚗 *KRAKEN Delivery:*\n"
+                f"👉 {delivery_link}\n\n"
+                f"Tu pedido será procesado en breve."
+            )
+        elif product_key == "pack_kraken":
+            delivery_msg += (
+                f"🐙 *PACK IMPERIO — TODO INCLUIDO:*\n\n"
+                f"📅 Asesoría: {DELIVERY_LINKS['asesoria']}\n"
+                f"📈 Señales: {DELIVERY_LINKS['signals']}\n"
+                f"🪙 Token: Felipe contactará\n"
+                f"🤖 Bot: Felipe contactará\n\n"
+                f"🚀 ¡A dominar el mercado, rey!"
+            )
+        else:
+            delivery_msg += (
+                f"📦 *Tu servicio será entregado pronto.*\n"
+                f"Un operador te contactará."
+            )
+
+        delivery_msg += (
+            "\n\n═══════════════════════\n"
+            "🐙 *Gracias por confiar en KRAKEN IMPERIO*\n"
+            "_Powered by KRAKEN-SAPIENS AI_"
+        )
 
         await context.bot.send_message(
             chat_id=target_id,
-            text=(
-                "✅ *¡PAGO CONFIRMADO!*\n\n"
-                f"🛒 {product.get('name', order['product'])}\n\n"
-                "🐙 Tu servicio será entregado pronto.\n"
-                "Gracias por confiar en KRAKEN IMPERIO."
-            ),
+            text=delivery_msg,
             parse_mode="Markdown",
         )
-        await update.message.reply_text(f"✅ Pago aprobado para usuario {target_id}")
+
+        # ── CONFIRMAR AL ADMIN ──
+        await update.message.reply_text(
+            f"✅ Pago aprobado para {target_id}\n"
+            f"🛒 Producto: {product.get('name', product_key)}\n"
+            f"📦 Entrega automática enviada"
+        )
     else:
         await update.message.reply_text("❌ No se encontró orden para ese usuario")
 
@@ -401,10 +644,12 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def health(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Estado del bot."""
     await update.message.reply_text(
-        "🐙 KRAKEN-SAPIENS V10.1\n"
+        "🐙 KRAKEN-SAPIENS V10.3\n"
+        "🧠 Cerebro: Groq/Llama 3 70B ✅\n"
         "✅ En línea | 24/7\n"
         f"🛒 Productos: {len(PRODUCTS)}\n"
-        f"💳 Wallets: {len(WALLETS)} redes"
+        f"💳 Wallets: {len(WALLETS)} redes\n"
+        f"👥 Usuarios HIERRO: {len(hierro_users)}"
     )
 
 
@@ -418,7 +663,9 @@ def main() -> None:
         logger.error("❌ TELEGRAM_TOKEN no configurado. Define la variable de entorno.")
         return
 
-    logger.info("🐙 KRAKEN-SAPIENS V10.1 arrancando...")
+    logger.info("🐙 KRAKEN-SAPIENS V10.3 arrancando...")
+    logger.info("🧠 Cerebro IA: Groq + Llama 3 70B")
+    logger.info(f"🔑 MASTER_KEY configurada: {'SÍ' if MASTER_KEY else 'NO'}")
 
     app = Application.builder().token(TOKEN).build()
 
@@ -439,9 +686,11 @@ def main() -> None:
     app.add_handler(CallbackQueryHandler(show_about, pattern="^about$"))
     app.add_handler(CallbackQueryHandler(start_back, pattern="^start_back$"))
 
-    # Comprobantes de pago (fotos y documentos)
+    # Comprobantes de pago (SOLO fotos y documentos)
     app.add_handler(MessageHandler(filters.PHOTO | filters.Document.ALL, handle_payment_proof))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_payment_proof))
+
+    # 🧠 TODOS LOS DEMÁS MENSAJES → PASAN POR EL CEREBRO IA
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # Polling
     logger.info("🐙 Bot en modo POLLING — Escuchando mensajes...")
