@@ -66,11 +66,17 @@ def cerebro_groq(mensaje, historial):
     msgs = [{"role": "system", "content": SISTEMA}]
     msgs += historial[-10:]
     msgs.append({"role": "user", "content": mensaje})
-    cuerpo = json.dumps({"messages": msgs, "temperature": 0.9, "max_tokens": 1024}).encode()
     for modelo in MODELOS:
         try:
+            # 🔥 REGLA DE ORO: el body se construye DENTRO del loop CON el campo "model"
+            cuerpo = json.dumps({
+                "model": modelo,
+                "messages": msgs,
+                "temperature": 0.9,
+                "max_tokens": 1024
+            }).encode()
             req = urllib.request.Request(
-                f"https://api.groq.com/openai/v1/chat/completions",
+                "https://api.groq.com/openai/v1/chat/completions",
                 data=cuerpo,
                 headers={
                     "Authorization": f"Bearer {GROQ_KEY}",
@@ -209,7 +215,7 @@ async def mensaje(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if baja.startswith("guarda "):
         saberes[txt[7:].strip()] = "guardado por el Creador"
         guardar_saberes()
-        await update.message.reply_text(f"📝 GUARDADO PARA SIEMPRE 🐙♾️")
+        await update.message.reply_text(f"📝 GUARDADO PARA SIEMPRE 🐙♾")
         return
 
     # Despedida
@@ -223,7 +229,7 @@ async def mensaje(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # Consultas guardadas
     for tema, valor in saberes.items():
         if tema.lower() in baja:
-            await update.message.reply_text(f"📖 {tema} = {valor} 🐙♾️")
+            await update.message.reply_text(f"📖 {tema} = {valor} 🐙♾")
             return
 
     # 🧠 TODO LO DEMÁS → CEREBRO GROQ (sin límites, siempre sí)
