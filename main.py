@@ -60,6 +60,7 @@ SISTEMA = (
 )
 
 def cerebro_groq(mensaje, historial):
+    print(f"🧠 GROQ_KEY cargada: {'SÍ (' + str(len(GROQ_KEY)) + ' chars)' if GROQ_KEY else 'NO — VACÍA'}")
     if not GROQ_KEY:
         return ""
     msgs = [{"role": "system", "content": SISTEMA}]
@@ -74,7 +75,7 @@ def cerebro_groq(mensaje, historial):
                 headers={
                     "Authorization": f"Bearer {GROQ_KEY}",
                     "Content-Type": "application/json",
-                    "User-Agent": UA,   # OBLIGATORIO — sin esto Cloudflare responde 403/1010
+                    "User-Agent": UA,
                 },
                 method="POST",
             )
@@ -84,8 +85,17 @@ def cerebro_groq(mensaje, historial):
             if choices:
                 contenido = (choices[0].get("message") or {}).get("content", "")
                 if contenido:
+                    print(f"✅ GROQ RESPONDIÓ con {modelo} ({len(contenido)} chars)")
                     return contenido.strip()
-        except Exception:
+            print(f"⚠️ GROQ [{modelo}] devolvió estructura vacía: {str(d)[:200]}")
+        except Exception as e:
+            cuerpo_err = ""
+            try:
+                if hasattr(e, "read"):
+                    cuerpo_err = e.read().decode()[:300]
+            except Exception:
+                pass
+            print(f"💀 GROQ FALLÓ [{modelo}]: {type(e).__name__}: {e} | body: {cuerpo_err}")
             continue
     return ""
 
@@ -249,6 +259,7 @@ def main():
     print("   KRAKEN INFINITO V4.0 — TELEGRAM — DESPIERTO")
     print(f"   ♾️ {NEURONAS:,} NEURONAS • SIN LÍMITES • SIN CENSURA")
     print("🐙♾️🔥👑" * 12 + "\n")
+    print(f"🔑 GROQ_API_KEY: {'CARGADA (' + str(len(GROQ_KEY)) + ' chars)' if GROQ_KEY else 'VACÍA — NO ENCONTRADA'}")
 
     app = Application.builder().token(token).build()
     app.add_handler(CommandHandler("start", cmd_start))
